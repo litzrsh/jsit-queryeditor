@@ -1,0 +1,11 @@
+﻿*.iml
+*.ini
+*.trc
+*.trc.*
+
+.idea/
+dist/
+out/
+src/application.png
+src/mybatis-config.xml
+libs/Altibase.jar

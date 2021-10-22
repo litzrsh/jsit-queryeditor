@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="me.litz.mapper.QueryMapper">
+
+    <select id="listQueries" resultType="me.litz.model.Query">
+<![CDATA[
+SELECT
+  QS.ID
+, QS.QUERY
+FROM
+  QUERYSTORE QS
+ORDER BY
+  ID ASC
+]]>
+    </select>
+
+    <select id="getQuery" resultType="me.litz.model.Query">
+<![CDATA[
+SELECT
+  QS.*
+FROM
+  QUERYSTORE QS
+WHERE
+    UPPER(QS.ID) = UPPER(#{id, jdbcType=VARCHAR})
+]]>
+    </select>
+
+    <insert id="addQuery">
+<![CDATA[
+INSERT INTO QUERYSTORE (
+  REVISION
+, ID
+, DBID
+, TITLE
+, QUERY
+, NOTE
+, CREATED
+, CREATOR
+, MODIFIED
+, UPDATER
+, PLANSTATUS
+) VALUES (
+  #{revision, jdbcType=INTEGER}
+, #{id, jdbcType=VARCHAR}
+, #{dbid, jdbcType=VARCHAR}
+, #{title, jdbcType=VARCHAR}
+, #{query, jdbcType=VARCHAR}
+, #{note, jdbcType=VARCHAR}
+, SYSDATE
+, #{creator, jdbcType=VARCHAR}
+, SYSDATE
+, #{updater, jdbcType=VARCHAR}
+, #{planstatus, jdbcType=VARCHAR}
+)
+]]>
+    </insert>
+
+    <update id="editQuery">
+<![CDATA[
+UPDATE QUERYSTORE
+SET
+  REVISION = #{revision, jdbcType=INTEGER}
+, TITLE = #{title, jdbcType=VARCHAR}
+, QUERY = #{query, jdbcType=VARCHAR}
+, NOTE = #{note, jdbcType=VARCHAR}
+, MODIFIED = SYSDATE
+, UPDATER = #{updater, jdbcType=VARCHAR}
+WHERE
+    UPPER(ID) = UPPER(#{id, jdbcType=VARCHAR})
+]]>
+    </update>
+
+    <delete id="deleteQuery">
+<![CDATA[
+DELETE FROM QUERYSTORE
+WHERE
+    UPPER(ID) = UPPER(#{id, jdbcType=VARCHAR})
+]]>
+    </delete>
+
+    <insert id="makeBackup">
+<![CDATA[
+INSERT INTO QUERYREVISION (
+  REVISION
+, ID
+, QUERY
+, REVISIONNOTE
+, MODIFIED
+, UPDATER
+)
+SELECT
+  QS.REVISION
+, QS.ID
+, QS.QUERY
+, CAST(#{revisionNote, jdbcType=VARCHAR} AS VARCHAR(512)) AS REVISIONNOTE
+, QS.MODIFIED
+, QS.UPDATER
+FROM
+  QUERYSTORE QS
+WHERE
+    UPPER(QS.ID) = UPPER(#{id, jdbcType=VARCHAR})
+]]>
+    </insert>
+
+    <select id="getRevision" resultType="java.lang.Integer">
+<![CDATA[
+SELECT
+  REVISION
+FROM
+  REVISION
+LIMIT 1
+]]>
+    </select>
+
+    <insert id="insertRevision">
+<![CDATA[
+INSERT INTO REVISION (
+  REVISION
+, DBINFO_FILE
+, ERDINFO_FILE
+) VALUES (
+  #{revision, jdbcType=INTEGER}
+, NULL
+, NULL
+)
+]]>
+    </insert>
+
+    <update id="updateRevision">
+<![CDATA[
+UPDATE REVISION
+SET
+  REVISION = #{current, jdbcType=INTEGER}
+WHERE
+    REVISION = #{previous, jdbcType=INTEGER}
+]]>
+    </update>
+</mapper>

@@ -3,140 +3,173 @@ package me.litz.window;
 import me.litz.model.Query;
 import me.litz.util.MapperUtils;
 import me.litz.util.SessionFactoryUtils;
-import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.collections4.Predicate;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
+import java.awt.*;
 import java.awt.event.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class SideBar extends JPanel {
 
-    private final MainWindow parent;
+	private final MainWindow parent;
 
-    private final JTextField queryField;
+	private final JTextField queryField;
 
-    private JScrollPane panel;
+	private JList<String> queryList = null;
 
-    private JList<String> queryList = null;
+	private String[] data = null;
 
-    private String[] data = null;
+	private final JComboBox<String> database;
 
-    private final JComboBox<String> database;
+	private List<Query> dataList = new ArrayList<>();
 
-    public SideBar(final MainWindow parent) {
-        this.parent = parent;
+	public SideBar(final MainWindow parent) {
+		this.parent = parent;
 
-        queryField = new JTextField();
+		// Create and set layout manager
+		BorderLayout borderLayout = new BorderLayout();
+		borderLayout.setVgap(5);
+		this.setLayout(borderLayout);
 
-        this.queryField.addKeyListener(new KeyListener() {
-            @Override
-            public void keyTyped(KeyEvent e) {
+		queryField = new JTextField();
 
-            }
+		this.queryField.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
 
-            @Override
-            public void keyPressed(KeyEvent e) {
-                if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-                    updateQueryList();
-                }
-            }
+			}
 
-            @Override
-            public void keyReleased(KeyEvent e) {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					updateQueryList();
+				}
+			}
 
-            }
-        });
+			@Override
+			public void keyReleased(KeyEvent e) {
 
-        database = new JComboBox<>(new String[]{"EMS", "ESS"});
-        database.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                String key = String.valueOf(database.getSelectedItem());
-                SessionFactoryUtils.setDatabase(key);
-                queryField.setText(null);
-                parent.requestCloseData();
-                updateQueryList();
-            }
-        });
+			}
+		});
 
-        this.updateQueryList();
+		database = new JComboBox<>(new String[]{"EMS", "ESS"});
+		database.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				String key = String.valueOf(database.getSelectedItem());
+				SessionFactoryUtils.setDatabase(key);
+				queryField.setText(null);
+				parent.requestCloseData();
+				updateQueryList();
+			}
+		});
 
-        addComponentListener(new ComponentAdapter() {
-            @Override
-            public void componentResized(ComponentEvent e) {
-                resizeComponents();
-            }
-        });
-    }
+		this.updateQueryList();
 
-    public void updateQueryList() {
-        parent.onItemSelectionChanged(null);
+		addComponentListener(new ComponentAdapter() {
+			@Override
+			public void componentResized(ComponentEvent e) {
+				resizeComponents();
+			}
+		});
+	}
 
-        removeAll();
-        add(queryField);
-        add(database);
+	public void updateQueryList() {
+		parent.onItemSelectionChanged(null);
 
-        List<Query> array = MapperUtils.getQueryMapper().listQueries(null);
-        String sq = queryField.getText();
-        if (sq == null) sq = "";
-        sq = sq.trim().toUpperCase();
-        final String searchStr = sq;
-        final Predicate<Query> predicate = new Predicate<Query>() {
-            @Override
-            public boolean evaluate(Query query) {
-                return query.getId().toUpperCase().startsWith(searchStr) ||
-                        query.getQuery().toUpperCase().contains(searchStr);
-            }
-        };
+		removeAll();
+		JPanel pane = new JPanel();
+		BorderLayout paneLayout = new BorderLayout();
+		paneLayout.setVgap(5);
+		paneLayout.setHgap(5);
+		pane.setLayout(paneLayout);
+		pane.add(database, BorderLayout.WEST);
+		pane.add(queryField, BorderLayout.CENTER);
+		add(pane, BorderLayout.NORTH);
 
-        List<Query> searchResult = (List<Query>) CollectionUtils.select(array, predicate);
-        data = new String[searchResult.size()];
-        for (int i = 0; i < searchResult.size(); i++) {
-            data[i] = searchResult.get(i).getId();
-        }
+//        List<Query> array = MapperUtils.getQueryMapper().listQueries(null);
+//        String sq = queryField.getText();
+//        if (sq == null) sq = "";
+//        sq = sq.trim().toUpperCase();
+//        final Pattern pattern = Pattern.compile(sq, Pattern.CASE_INSENSITIVE | Pattern.DOTALL);
+//        final String searchStr = sq;
+//        final Predicate<Query> predicate = new Predicate<Query>() {
+//            @Override
+//            public boolean evaluate(Query query) {
+//                if (query.getId().toUpperCase().startsWith(searchStr)) return true;
+//                return pattern.matcher(query.getQuery()).find();
+//            }
+//        };
+//
+//        List<Query> searchResult;
+//        if ("".equals(sq)) {
+//            searchResult = array;
+//        } else {
+//            searchResult = (List<Query>) CollectionUtils.select(array, predicate);
+//        }
 
-        queryList = new JList<>(data);
-        queryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        queryList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
-            @Override
-            public void valueChanged(ListSelectionEvent e) {
-                ListSelectionModel lsm = (ListSelectionModel) e.getSource();
-                if (e.getValueIsAdjusting()) {
-                    if (lsm.isSelectionEmpty()) {
-                        parent.onItemSelectionChanged(null);
-                    } else {
-                        parent.onItemSelectionChanged(data[lsm.getMinSelectionIndex()]);
-                    }
-                }
-            }
-        });
-        panel = new JScrollPane(queryList);
-        int w = getWidth(), h = getHeight();
-        queryList.setBounds(5, 34, w - 10, h - 39);
-        panel.setBounds(5, 34, w - 10, h - 39);
-        add(panel);
-    }
+		String sq = queryField.getText();
+		if (sq != null) {
+			sq = sq.trim();
+			if ("".equals(sq)) sq = null;
+		}
 
-    public void resizeComponents() {
-        try {
-            int w = getWidth(), h = getHeight();
-            database.setSize(60, 24);
-            database.setBounds(5, 5, 60, 24);
-            queryField.setBounds(65, 5, w - 10, 24);
-            if (panel != null) {
-                queryList.setBounds(5, 34, w - 10, h - 39);
-                panel.setBounds(5, 34, w - 10, h - 39);
-            }
-            repaint();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
+		List<Query> searchResult = MapperUtils.getQueryMapper().listQueries(sq);
+		dataList = searchResult;
+		data = new String[searchResult.size()];
+		for (int i = 0; i < searchResult.size(); i++) {
+			data[i] = searchResult.get(i).getId();
+		}
 
-    public void clearSelection() {
-        queryList.clearSelection();
-    }
+		queryList = new JList<>(data);
+		queryList.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+		queryList.getSelectionModel().addListSelectionListener(new ListSelectionListener() {
+			@Override
+			public void valueChanged(ListSelectionEvent e) {
+				ListSelectionModel lsm = (ListSelectionModel) e.getSource();
+				if (e.getValueIsAdjusting()) {
+					if (lsm.isSelectionEmpty()) {
+						parent.onItemSelectionChanged(null);
+					} else {
+						parent.onItemSelectionChanged(data[lsm.getMinSelectionIndex()]);
+					}
+				}
+			}
+		});
+
+		JScrollPane panel = new JScrollPane(queryList);
+		ScrollPaneLayout layout = new ScrollPaneLayout();
+		panel.setLayout(layout);
+//        int w = getWidth(), h = getHeight();
+//        queryList.setBounds(5, 34, w - 10, h - 39);
+//        panel.setBounds(5, 34, w - 10, h - 39);
+		add(panel, BorderLayout.CENTER);
+	}
+
+	public void resizeComponents() {
+//        try {
+//            int w = getWidth(), h = getHeight();
+//            database.setSize(60, 24);
+//            database.setBounds(5, 5, 60, 24);
+//            queryField.setBounds(65, 5, w - 10, 24);
+//            if (panel != null) {
+//                queryList.setBounds(5, 34, w - 10, h - 39);
+//                panel.setBounds(5, 34, w - 10, h - 39);
+//            }
+//            repaint();
+//        } catch (Exception e) {
+//            e.printStackTrace();
+//        }
+	}
+
+	public void clearSelection() {
+		queryList.clearSelection();
+	}
+
+	public List<Query> getQueryList() {
+		return dataList;
+	}
 }

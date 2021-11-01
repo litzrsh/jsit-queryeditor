@@ -22,12 +22,18 @@ public class QueryMapperImpl implements QueryMapper {
 
 	@Override
 	@SuppressWarnings({"unchecked"})
-	public List<Query> listQueries(String id) {
+	public List<Query> listQueries(String query) {
 		List<Query> result;
 		SqlSession session = factory.openSession();
 		try {
 			Map<String, Object> params = new HashMap<>();
-			params.put("id", StringUtils.trim(id));
+			if (query != null) {
+				params.put("id", query.toUpperCase() + "%");
+				params.put("query", "%" + query.toUpperCase() + "%");
+			} else {
+				params.put("id", null);
+				params.put("query", null);
+			}
 			result = (List<Query>) session.selectList(PACKAGE + "listQueries", params);
 		} finally {
 			session.close();

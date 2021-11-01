@@ -2,6 +2,8 @@ package me.litz.window;
 
 import me.litz.model.Query;
 import me.litz.util.SessionUtils;
+import me.litz.window.menu.FileMenu;
+import me.litz.window.menu.ToolsMenu;
 
 import javax.swing.*;
 import java.awt.event.ComponentAdapter;
@@ -27,10 +29,11 @@ public class MainWindow extends JFrame {
 		queryEditPanel = new QueryEditPanel(this);
 		JSplitPane splitPane = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT, sideBar, queryEditPanel);
 
-		String title = "Query editor v1.1";
+		String title = "Query editor v1.2";
 
 		// 2021. 11. 01. -> Add menu bar
 		JMenuBar menuBar = new JMenuBar();
+		menuBar.add(new FileMenu(this)); // File
 		menuBar.add(new ToolsMenu(this)); // Tools
 
 		this.setJMenuBar(menuBar);
@@ -54,6 +57,8 @@ public class MainWindow extends JFrame {
 			setTitle(title);
 		}
 
+		saveAsProperties();
+
 		addComponentListener(new ComponentAdapter() {
 			@Override
 			public void componentMoved(ComponentEvent e) {
@@ -71,32 +76,7 @@ public class MainWindow extends JFrame {
 		addWindowListener(new WindowAdapter() {
 			@Override
 			public void windowClosing(WindowEvent e) {
-				Properties prop = new Properties();
-				int w = getWidth(), h = getHeight();
-				int x = getX(), y = getY();
-				boolean mx = (getExtendedState() & MAXIMIZED_BOTH) != 0;
-
-				// 세션 사용자 이름 추가
-				prop.setProperty("username", SessionUtils.getUsername());
-				if (mx) {
-					prop.setProperty("width", String.valueOf(PropertyUtils.getWidth()));
-					prop.setProperty("height", String.valueOf(PropertyUtils.getHeight()));
-					prop.setProperty("x", String.valueOf(PropertyUtils.getX()));
-					prop.setProperty("y", String.valueOf(PropertyUtils.getY()));
-				} else {
-					prop.setProperty("width", String.valueOf(w > 100 ? w : 1024));
-					prop.setProperty("height", String.valueOf(h > 100 ? h : 768));
-					prop.setProperty("x", String.valueOf(Math.max(x, 0)));
-					prop.setProperty("y", String.valueOf(Math.max(y, 0)));
-				}
-				prop.setProperty("maximized", String.valueOf(mx));
-
-				try {
-					prop.store(new FileOutputStream(PropertyUtils.FILENAME), null);
-				} catch (IOException ioException) {
-					ioException.printStackTrace();
-				}
-
+				saveAsProperties();
 				dispose();
 			}
 		});
@@ -146,5 +126,33 @@ public class MainWindow extends JFrame {
 
 	public List<Query> getQueryList() {
 		return this.sideBar.getQueryList();
+	}
+
+	private void saveAsProperties() {
+		Properties prop = new Properties();
+		int w = getWidth(), h = getHeight();
+		int x = getX(), y = getY();
+		boolean mx = (getExtendedState() & MAXIMIZED_BOTH) != 0;
+
+		// 세션 사용자 이름 추가
+		prop.setProperty("username", SessionUtils.getUsername());
+		if (mx) {
+			prop.setProperty("width", String.valueOf(PropertyUtils.getWidth()));
+			prop.setProperty("height", String.valueOf(PropertyUtils.getHeight()));
+			prop.setProperty("x", String.valueOf(PropertyUtils.getX()));
+			prop.setProperty("y", String.valueOf(PropertyUtils.getY()));
+		} else {
+			prop.setProperty("width", String.valueOf(w > 100 ? w : 1024));
+			prop.setProperty("height", String.valueOf(h > 100 ? h : 768));
+			prop.setProperty("x", String.valueOf(Math.max(x, 0)));
+			prop.setProperty("y", String.valueOf(Math.max(y, 0)));
+		}
+		prop.setProperty("maximized", String.valueOf(mx));
+
+		try {
+			prop.store(new FileOutputStream(PropertyUtils.FILENAME), null);
+		} catch (IOException ioException) {
+			ioException.printStackTrace();
+		}
 	}
 }

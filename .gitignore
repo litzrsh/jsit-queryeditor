@@ -9,3 +9,5 @@ out/
 src/application.png
 src/mybatis-config.xml
 libs/Altibase.jar
+/src/application.properties
+/*.properties

@@ -10,9 +10,13 @@ FROM
   QUERYSTORE QS
 ]]>
         <where>
-            <if test="id neq null">
+            <if test="query neq null">
 <![CDATA[
-AND UPPER(QS.ID) LIKE CONCAT(UPPER(#{id, jdbcType=VARCHAR}), '%')
+AND (
+        UPPER(QS.ID) LIKE #{id, jdbcType=VARCHAR}
+    OR  UPPER(QS.CREATOR) LIKE #{query, jdbcType=VARCHAR}
+    OR  UPPER(QS.UPDATER) LIKE #{query, jdbcType=VARCHAR}
+)
 ]]>
             </if>
         </where>

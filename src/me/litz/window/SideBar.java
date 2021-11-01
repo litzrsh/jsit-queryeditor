@@ -8,6 +8,8 @@ import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
@@ -139,6 +141,31 @@ public class SideBar extends JPanel {
 				}
 			}
 		});
+		queryList.addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				// 목록 복사
+				if (e.isControlDown() && e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_C) {
+					StringBuilder text = new StringBuilder();
+					for (String d : data) {
+						text.append(d).append("\r\n");
+					}
+					StringSelection t = new StringSelection(text.toString());
+					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+					clipboard.setContents(t, null);
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+
+			}
+		});
 
 		JScrollPane panel = new JScrollPane(queryList);
 		ScrollPaneLayout layout = new ScrollPaneLayout();
@@ -147,6 +174,8 @@ public class SideBar extends JPanel {
 //        queryList.setBounds(5, 34, w - 10, h - 39);
 //        panel.setBounds(5, 34, w - 10, h - 39);
 		add(panel, BorderLayout.CENTER);
+
+		updateUI();
 	}
 
 	public void resizeComponents() {

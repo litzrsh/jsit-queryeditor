@@ -1,6 +1,7 @@
-package me.litz.window;
+package me.litz.window.menu;
 
 import me.litz.model.Query;
+import me.litz.window.MainWindow;
 
 import javax.swing.*;
 import java.awt.event.ActionEvent;
@@ -11,14 +12,19 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.prefs.Preferences;
 
-public class ToolsDownloadMenu extends JMenuItem {
+public class ToolsExportMenuItem extends JMenuItem {
+
+	private static final String NODE_NAME = "JiSungITQueryEditor";
+
+	private static final String LAST_VISITED_DIR = "LAST_VISITED_DIR";
 
 	private static final DateFormat df = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-	public ToolsDownloadMenu(final MainWindow parent) {
-		super("Download");
-		final ToolsDownloadMenu _this = this;
+	public ToolsExportMenuItem(final MainWindow parent) {
+		super("Export...");
+		final ToolsExportMenuItem _this = this;
 
 		addActionListener(new ActionListener() {
 			@Override
@@ -30,12 +36,27 @@ public class ToolsDownloadMenu extends JMenuItem {
 					return;
 				}
 
-				JFileChooser fileChooser = new JFileChooser();
+				Preferences prefs;
+				String lastDirectory = null;
+				try {
+					prefs = Preferences.userRoot().node(NODE_NAME);
+					lastDirectory = prefs.get(LAST_VISITED_DIR, null);
+				} catch (Exception ex) {
+					ex.printStackTrace();
+				}
+
+				JFileChooser fileChooser = new JFileChooser(lastDirectory);
 				fileChooser.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
 
 				int opt = fileChooser.showSaveDialog(_this);
-				if (opt == 0) {
+				if (opt == JFileChooser.APPROVE_OPTION) {
 					final String basePath = fileChooser.getSelectedFile().getAbsolutePath();
+					try {
+						prefs = Preferences.userRoot().node(NODE_NAME);
+						prefs.put(LAST_VISITED_DIR, basePath);
+					} catch (Exception ex) {
+						ex.printStackTrace();
+					}
 
 					for (Query query : queryList) {
 						final String filepath = basePath + "/" + query.getId() + ".sql";

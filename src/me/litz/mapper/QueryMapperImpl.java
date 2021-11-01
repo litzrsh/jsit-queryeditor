@@ -127,7 +127,7 @@ public class QueryMapperImpl implements QueryMapper {
 		paramMap.put("id", id);
 		Integer revision = (Integer) session.selectOne(PACKAGE + "getRevisionNew", paramMap);
 		session.update(PACKAGE + "updateRevisionNew");
-		return revision;
+		return revision == null ? 1 : revision;
 //        Integer r = (Integer) session.selectOne(PACKAGE + "getRevision");
 //        Map<String, Object> params = new HashMap<>();
 //        if (r == null) {

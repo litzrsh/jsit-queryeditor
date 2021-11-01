@@ -147,17 +147,13 @@ WHERE
     <select id="getRevisionNew" resultType="java.lang.Integer">
 <![CDATA[
 SELECT
-  NVL((
-    SELECT
-      MAX(QR.REVISION) + 1 AS REVISION
-    FROM
-      QUERYREVISION QR
-    WHERE
-        UPPER(QR.ID) = UPPER(#{id, jdbcType=VARCHAR})
-    GROUP BY
-      QR.ID), 1) AS REVISION
+  MAX(QR.REVISION) + 1 AS REVISION
 FROM
-  DUAL
+  QUERYREVISION QR
+WHERE
+    UPPER(QR.ID) = UPPER(#{id, jdbcType=VARCHAR})
+GROUP BY
+  QR.ID
 ]]>
     </select>
 

@@ -11,6 +11,7 @@ import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -149,11 +150,15 @@ public class SideBar extends JPanel {
 
 			@Override
 			public void keyPressed(KeyEvent e) {
+				final SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 				// 목록 복사
 				if (e.isControlDown() && e.isShiftDown() && e.getKeyCode() == KeyEvent.VK_C) {
 					StringBuilder text = new StringBuilder();
-					for (String d : data) {
-						text.append(d).append("\r\n");
+					for (Query d : dataList) {
+						text.append(d.getId())
+								.append("\t")
+								.append(sdf.format(d.getModified()))
+								.append("\r\n");
 					}
 					StringSelection t = new StringSelection(text.toString());
 					Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();

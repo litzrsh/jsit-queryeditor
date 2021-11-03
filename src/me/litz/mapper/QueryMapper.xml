@@ -33,7 +33,7 @@ SELECT
 FROM
   QUERYSTORE QS
 WHERE
-    UPPER(QS.ID) = UPPER(#{id, jdbcType=VARCHAR})
+    QS.ID = #{id, jdbcType=VARCHAR}
 ]]>
     </select>
 
@@ -78,7 +78,7 @@ SET
 , MODIFIED = SYSDATE
 , UPDATER = #{updater, jdbcType=VARCHAR}
 WHERE
-    UPPER(ID) = UPPER(#{id, jdbcType=VARCHAR})
+    ID = #{id, jdbcType=VARCHAR}
 ]]>
     </update>
 
@@ -86,7 +86,7 @@ WHERE
 <![CDATA[
 DELETE FROM QUERYSTORE
 WHERE
-    UPPER(ID) = UPPER(#{id, jdbcType=VARCHAR})
+    ID = #{id, jdbcType=VARCHAR}
 ]]>
     </delete>
 
@@ -110,7 +110,7 @@ SELECT
 FROM
   QUERYSTORE QS
 WHERE
-    UPPER(QS.ID) = UPPER(#{id, jdbcType=VARCHAR})
+    QS.ID = #{id, jdbcType=VARCHAR}
 ]]>
     </insert>
 
@@ -155,7 +155,7 @@ SELECT
 FROM
   QUERYREVISION QR
 WHERE
-    UPPER(QR.ID) = UPPER(#{id, jdbcType=VARCHAR})
+    QR.ID = #{id, jdbcType=VARCHAR}
 GROUP BY
   QR.ID
 ]]>

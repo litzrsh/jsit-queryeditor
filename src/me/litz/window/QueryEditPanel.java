@@ -35,6 +35,8 @@ public class QueryEditPanel extends JPanel {
 
 	private final JButton closeButton;
 
+	private final JButton cloneButton;
+
 	private final JScrollPane queryScrollPanel;
 
 	private final List<String> queryHistory = new ArrayList<>();
@@ -91,6 +93,13 @@ public class QueryEditPanel extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				closeData();
+			}
+		});
+		cloneButton = new JButton("Clone");
+		cloneButton.addActionListener(new ActionListener() {
+			@Override
+			public void actionPerformed(ActionEvent e) {
+				cloneQuery();
 			}
 		});
 
@@ -153,6 +162,8 @@ public class QueryEditPanel extends JPanel {
 		buttonPanel.add(saveButton);
 		buttonPanel.add(Box.createRigidArea(new Dimension(10, 44)));
 		buttonPanel.add(deleteButton);
+		buttonPanel.add(Box.createRigidArea(new Dimension(10, 44)));
+		buttonPanel.add(cloneButton);
 		buttonPanel.add(Box.createRigidArea(new Dimension(10, 44)));
 		buttonPanel.add(closeButton);
 		add(buttonPanel, BorderLayout.NORTH);
@@ -252,6 +263,7 @@ public class QueryEditPanel extends JPanel {
 		saveButton.setEnabled(true);
 		deleteButton.setEnabled(isEdit);
 		closeButton.setEnabled(true);
+		cloneButton.setEnabled(true);
 
 		id.setText(entity.getId());
 		id.setEnabled(true);
@@ -280,6 +292,7 @@ public class QueryEditPanel extends JPanel {
 		saveButton.setEnabled(false);
 		deleteButton.setEnabled(false);
 		closeButton.setEnabled(false);
+		cloneButton.setEnabled(false);
 
 		id.setText(null);
 		id.setEnabled(false);
@@ -360,8 +373,8 @@ public class QueryEditPanel extends JPanel {
 				return;
 			}
 
-			if (_title.length() < 10 || _title.length() > 128) {
-				JOptionPane.showMessageDialog(null, "Title text cannot shorter than 10 or longer than 128");
+			if (_title.length() < 1 || _title.length() > 128) {
+				JOptionPane.showMessageDialog(null, "Title text cannot shorter than 1 or longer than 128");
 				return;
 			}
 
@@ -394,5 +407,10 @@ public class QueryEditPanel extends JPanel {
 		if (value == null) return true;
 		value = value.trim();
 		return "".equals(value);
+	}
+
+	private void cloneQuery() {
+		id.setEditable(true);
+		entity.setOld(false);
 	}
 }

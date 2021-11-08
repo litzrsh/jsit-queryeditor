@@ -1,5 +1,6 @@
 package me.litz.window;
 
+import me.litz.constants.DbInfo;
 import me.litz.mapper.QueryMapper;
 import me.litz.model.Query;
 import me.litz.util.MapperUtils;
@@ -11,11 +12,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
 
 public class QueryEditPanel extends JPanel {
 
 	public static final int MAX_HISTORY_SIZE = 256;
+
+	private static DbInfo dbInfo = DbInfo.EMS;
 
 	private final MainWindow parent;
 
@@ -42,8 +44,6 @@ public class QueryEditPanel extends JPanel {
 	private final List<String> queryHistory = new ArrayList<>();
 
 	private boolean active = false;
-
-	private Timer timer;
 
 	public QueryEditPanel(final MainWindow parent) {
 		this.parent = parent;
@@ -386,6 +386,7 @@ public class QueryEditPanel extends JPanel {
 			try {
 				entity.setTitle(_title);
 				entity.setQuery(_query);
+				entity.setDbid(dbInfo.getInfo());
 				if (entity.isOld()) {
 					queryMapper.editQuery(entity);
 				} else {
@@ -412,5 +413,9 @@ public class QueryEditPanel extends JPanel {
 	private void cloneQuery() {
 		id.setEditable(true);
 		entity.setOld(false);
+	}
+
+	public static void updateDbProperty(DbInfo dbInfo) {
+		QueryEditPanel.dbInfo = dbInfo;
 	}
 }

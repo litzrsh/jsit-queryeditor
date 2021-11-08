@@ -1,5 +1,6 @@
 package me.litz.window;
 
+import me.litz.constants.DbInfo;
 import me.litz.model.Query;
 import me.litz.util.MapperUtils;
 import me.litz.util.SessionFactoryUtils;
@@ -63,6 +64,7 @@ public class SideBar extends JPanel {
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				String key = String.valueOf(database.getSelectedItem());
+				QueryEditPanel.updateDbProperty(DbInfo.valueOf(key));
 				SessionFactoryUtils.setDatabase(key);
 				queryField.setText(null);
 				parent.requestCloseData();
@@ -70,7 +72,8 @@ public class SideBar extends JPanel {
 			}
 		});
 
-		this.updateQueryList();
+		createTopItems();
+		createScrollPanel(new JList<String>());
 
 		addComponentListener(new ComponentAdapter() {
 			@Override
@@ -81,17 +84,12 @@ public class SideBar extends JPanel {
 	}
 
 	public void updateQueryList() {
+		parent.loadingStart();
+
 		parent.onItemSelectionChanged(null);
 
 		removeAll();
-		JPanel pane = new JPanel();
-		BorderLayout paneLayout = new BorderLayout();
-		paneLayout.setVgap(5);
-		paneLayout.setHgap(5);
-		pane.setLayout(paneLayout);
-		pane.add(database, BorderLayout.WEST);
-		pane.add(queryField, BorderLayout.CENTER);
-		add(pane, BorderLayout.NORTH);
+		createTopItems();
 
 //        List<Query> array = MapperUtils.getQueryMapper().listQueries(null);
 //        String sq = queryField.getText();
@@ -157,7 +155,11 @@ public class SideBar extends JPanel {
 					for (Query d : dataList) {
 						text.append(d.getId())
 								.append("\t")
+								.append(d.getTitle())
+								.append("\t")
 								.append(sdf.format(d.getModified()))
+								.append("\t")
+								.append(d.getCreator().equals(d.getUpdater()))
 								.append("\r\n");
 					}
 					StringSelection t = new StringSelection(text.toString());
@@ -172,6 +174,24 @@ public class SideBar extends JPanel {
 			}
 		});
 
+		createScrollPanel(queryList);
+		updateUI();
+
+		parent.loadingEnd();
+	}
+
+	private void createTopItems() {
+		JPanel pane = new JPanel();
+		BorderLayout paneLayout = new BorderLayout();
+		paneLayout.setVgap(5);
+		paneLayout.setHgap(5);
+		pane.setLayout(paneLayout);
+		pane.add(database, BorderLayout.WEST);
+		pane.add(queryField, BorderLayout.CENTER);
+		add(pane, BorderLayout.NORTH);
+	}
+
+	private void createScrollPanel(JList<String> queryList) {
 		JScrollPane panel = new JScrollPane(queryList);
 		ScrollPaneLayout layout = new ScrollPaneLayout();
 		panel.setLayout(layout);
@@ -179,8 +199,7 @@ public class SideBar extends JPanel {
 //        queryList.setBounds(5, 34, w - 10, h - 39);
 //        panel.setBounds(5, 34, w - 10, h - 39);
 		add(panel, BorderLayout.CENTER);
-
-		updateUI();
+		this.queryList = queryList;
 	}
 
 	public void resizeComponents() {

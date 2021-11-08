@@ -31,13 +31,11 @@ public class MainWindow extends JFrame {
 
 		String title = "Query editor v1.2";
 
-		// 2021. 11. 01. -> Add menu bar
 		JMenuBar menuBar = new JMenuBar();
 		menuBar.add(new FileMenu(this)); // File
 		menuBar.add(new ToolsMenu(this)); // Tools
 
-		this.setJMenuBar(menuBar);
-		// **** Finished
+		setJMenuBar(menuBar);
 
 		setTitle(title);
 		add(splitPane);
@@ -75,7 +73,14 @@ public class MainWindow extends JFrame {
 
 		addWindowListener(new WindowAdapter() {
 			@Override
+			public void windowOpened(WindowEvent e) {
+				super.windowOpened(e);
+				sideBar.updateQueryList();
+			}
+
+			@Override
 			public void windowClosing(WindowEvent e) {
+				super.windowClosing(e);
 				saveAsProperties();
 				dispose();
 			}
@@ -154,5 +159,15 @@ public class MainWindow extends JFrame {
 		} catch (IOException ioException) {
 			ioException.printStackTrace();
 		}
+	}
+
+	public void loadingStart() {
+		System.out.println("Start loading");
+		this.setEnabled(false);
+	}
+
+	public void loadingEnd() {
+		this.setEnabled(true);
+		System.out.println("Finish loading");
 	}
 }

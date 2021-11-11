@@ -24,7 +24,7 @@ public class QueryMapperImpl implements QueryMapper {
 	@SuppressWarnings({"unchecked"})
 	public List<Query> listQueries(String query) {
 		List<Query> result;
-		SqlSession session = factory.openSession();
+		SqlSession session = factory.openSession(false);
 		try {
 			Map<String, Object> params = new HashMap<>();
 			if (query != null) {
@@ -35,6 +35,7 @@ public class QueryMapperImpl implements QueryMapper {
 				params.put("query", null);
 			}
 			result = (List<Query>) session.selectList(PACKAGE + "listQueries", params);
+			session.commit();
 		} finally {
 			session.close();
 		}
@@ -44,11 +45,12 @@ public class QueryMapperImpl implements QueryMapper {
 	@Override
 	public Query getQuery(String id) {
 		Query entity;
-		SqlSession session = factory.openSession();
+		SqlSession session = factory.openSession(false);
 		try {
 			Map<String, Object> params = new HashMap<>();
 			params.put("id", StringUtils.trim(id));
 			entity = (Query) session.selectOne(PACKAGE + "getQuery", params);
+			session.commit();
 		} finally {
 			session.close();
 		}

@@ -118,7 +118,10 @@ public class SideBar extends JPanel {
 			if ("".equals(sq)) sq = null;
 		}
 
-		List<Query> searchResult = MapperUtils.getQueryMapper().listQueries(sq);
+		List<Query> searchResult = new ArrayList<>();
+		if (sq != null) {
+			searchResult = MapperUtils.getQueryMapper().listQueries(sq);
+		}
 		dataList = searchResult;
 		data = new String[searchResult.size()];
 		for (int i = 0; i < searchResult.size(); i++) {
@@ -160,6 +163,8 @@ public class SideBar extends JPanel {
 								.append(sdf.format(d.getModified()))
 								.append("\t")
 								.append(d.getCreator().equals(d.getUpdater()))
+								.append("\t")
+								.append("\"" + d.getQuery() + "\"")
 								.append("\r\n");
 					}
 					StringSelection t = new StringSelection(text.toString());

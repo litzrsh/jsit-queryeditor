@@ -31,9 +31,7 @@ public class UploadUtils {
 		entity.setTitle(title);
 		entity.setQuery(query);
 
-		System.out.println("id : " + id + ", title : " + title + "\r\n" + query + "\r\n");
-
-//		Throwable e = tryInsert(entity);
+		//		Throwable e = tryInsert(entity);
 //		if (e != null) {
 //			e = tryUpdate(entity);
 //		}

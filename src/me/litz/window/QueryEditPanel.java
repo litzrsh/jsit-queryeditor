@@ -7,11 +7,16 @@ import me.litz.util.MapperUtils;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.DataFlavor;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.*;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+
+import static java.awt.datatransfer.DataFlavor.stringFlavor;
 
 public class QueryEditPanel extends JPanel {
 
@@ -118,36 +123,36 @@ public class QueryEditPanel extends JPanel {
 		} catch (FontFormatException | IOException e) {
 			e.printStackTrace();
 		}
-		query.addKeyListener(new KeyListener() {
-			@Override
-			public void keyTyped(KeyEvent e) {
-
-			}
-
-			@Override
-			public void keyPressed(KeyEvent e) {
-				if (!active) return;
-				// Control event
-				if (e.isControlDown()) {
-					switch (e.getKeyCode()) {
-						case KeyEvent.VK_S:
-							saveQuery();
-							return;
-						case KeyEvent.VK_Z:
-							restoreQueryFromHistory();
-							return;
-						default:
-							break;
-					}
-				}
-				addQueryHistory();
-			}
-
-			@Override
-			public void keyReleased(KeyEvent e) {
-
-			}
-		});
+//		query.addKeyListener(new KeyListener() {
+//			@Override
+//			public void keyTyped(KeyEvent e) {
+//
+//			}
+//
+//			@Override
+//			public void keyPressed(KeyEvent e) {
+//				if (!active) return;
+//				// Control event
+//				if (e.isControlDown()) {
+//					switch (e.getKeyCode()) {
+//						case KeyEvent.VK_S:
+//							saveQuery();
+//							return;
+//						case KeyEvent.VK_Z:
+//							restoreQueryFromHistory();
+//							return;
+//						default:
+//							break;
+//					}
+//				}
+//				addQueryHistory();
+//			}
+//
+//			@Override
+//			public void keyReleased(KeyEvent e) {
+//
+//			}
+//		});
 
 		BorderLayout layout = new BorderLayout();
 		layout.setVgap(10);
@@ -355,51 +360,53 @@ public class QueryEditPanel extends JPanel {
 		}
 	}
 
-	protected void saveQuery() {
-		int r = JOptionPane.showConfirmDialog(null, "Save the query?");
-		QueryMapper queryMapper = MapperUtils.getQueryMapper();
-		if (r == 0) {
-			String _id = id.getText();
-			String _title = title.getText();
-			String _query = query.getText();
+	public void saveQuery() {
+		if (active && entity != null) {
+			int r = JOptionPane.showConfirmDialog(null, "Save the query?");
+			QueryMapper queryMapper = MapperUtils.getQueryMapper();
+			if (r == 0) {
+				String _id = id.getText();
+				String _title = title.getText();
+				String _query = query.getText();
 
-			if (isEmpty(_id)) {
-				JOptionPane.showMessageDialog(null, "ID cannot be empty string");
-				return;
-			}
-
-			if (isEmpty(_title)) {
-				JOptionPane.showMessageDialog(null, "Title cannot be empty string");
-				return;
-			}
-
-			if (_title.length() < 1 || _title.length() > 128) {
-				JOptionPane.showMessageDialog(null, "Title text cannot shorter than 1 or longer than 128");
-				return;
-			}
-
-			if (isEmpty(_query)) {
-				JOptionPane.showMessageDialog(null, "Query cannot be empty string");
-				return;
-			}
-
-			try {
-				entity.setTitle(_title);
-				entity.setQuery(_query);
-				entity.setDbid(dbInfo.getInfo());
-				if (entity.isOld()) {
-					queryMapper.editQuery(entity);
-				} else {
-					entity.setId(_id);
-					queryMapper.addQuery(entity);
+				if (isEmpty(_id)) {
+					JOptionPane.showMessageDialog(null, "ID cannot be empty string");
+					return;
 				}
-				JOptionPane.showMessageDialog(null, "Query save successful");
 
-				parent.requestUpdateQueryList();
-				closeData();
-			} catch (Throwable exception) {
-				exception.printStackTrace();
-				JOptionPane.showMessageDialog(null, exception.getMessage());
+				if (isEmpty(_title)) {
+					JOptionPane.showMessageDialog(null, "Title cannot be empty string");
+					return;
+				}
+
+				if (_title.length() < 1 || _title.length() > 128) {
+					JOptionPane.showMessageDialog(null, "Title text cannot shorter than 1 or longer than 128");
+					return;
+				}
+
+				if (isEmpty(_query)) {
+					JOptionPane.showMessageDialog(null, "Query cannot be empty string");
+					return;
+				}
+
+				try {
+					entity.setTitle(_title);
+					entity.setQuery(_query);
+					entity.setDbid(dbInfo.getInfo());
+					if (entity.isOld()) {
+						queryMapper.editQuery(entity);
+					} else {
+						entity.setId(_id);
+						queryMapper.addQuery(entity);
+					}
+					JOptionPane.showMessageDialog(null, "Query save successful");
+
+					parent.requestUpdateQueryList();
+					closeData();
+				} catch (Throwable exception) {
+					exception.printStackTrace();
+					JOptionPane.showMessageDialog(null, exception.getMessage());
+				}
 			}
 		}
 	}
@@ -413,6 +420,40 @@ public class QueryEditPanel extends JPanel {
 	private void cloneQuery() {
 		id.setEditable(true);
 		entity.setOld(false);
+	}
+
+	public void cloneQueryFromClipboard() {
+		try {
+			Clipboard clipboard = Toolkit.getDefaultToolkit().getSystemClipboard();
+			String content = (String) clipboard.getData(stringFlavor);
+			// Parse contents
+			String[] contents = content.split("\t");
+			// ID, Title, Query
+			String id = contents[0].trim();
+			String title = contents[1].trim();
+			String query = contents[2].trim().replaceAll("(^\")|(\"$)", "");
+
+			deactivatePanel();
+
+			Query dto = MapperUtils.getQueryMapper().getQuery(id);
+			if (dto != null) {
+				entity = dto;
+				entity.setOld(true);
+			} else {
+				entity = new Query();
+				entity.setId(id);
+				entity.setOld(false);
+			}
+
+			entity.setTitle(title);
+			entity.setQuery(query);
+
+			activatePanel(dto != null);
+		} catch (Exception exception) {
+			entity = null;
+			deactivatePanel();
+			exception.printStackTrace();
+		}
 	}
 
 	public static void updateDbProperty(DbInfo dbInfo) {

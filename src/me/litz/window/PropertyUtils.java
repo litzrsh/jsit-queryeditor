@@ -35,7 +35,6 @@ public class PropertyUtils {
             _inst.setY(0);
             _inst.setMaximized(false);
         } finally {
-            System.out.println("Username : " + username);
             SessionUtils.setUsername(username);
         }
     }

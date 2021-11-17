@@ -6,10 +6,8 @@ import me.litz.window.menu.FileMenu;
 import me.litz.window.menu.ToolsMenu;
 
 import javax.swing.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
+import java.awt.*;
+import java.awt.event.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.List;
@@ -85,6 +83,44 @@ public class MainWindow extends JFrame {
 				dispose();
 			}
 		});
+
+		addKeyListener(new KeyListener() {
+			@Override
+			public void keyTyped(KeyEvent e) {
+			}
+
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.isControlDown() && e.isShiftDown()) {
+					if (e.getKeyCode() == KeyEvent.VK_V) {
+						queryEditPanel.cloneQueryFromClipboard();
+					}
+				} else if (e.isControlDown()) {
+					if (e.getKeyCode() == KeyEvent.VK_S) {
+						queryEditPanel.saveQuery();
+					}
+				}
+			}
+
+			@Override
+			public void keyReleased(KeyEvent e) {
+			}
+		});
+		setFocusable(true);
+		setFocusTraversalKeysEnabled(false);
+
+		KeyboardFocusManager.getCurrentKeyboardFocusManager()
+				.addKeyEventDispatcher(new KeyEventDispatcher() {
+					@Override
+					public boolean dispatchKeyEvent(KeyEvent e) {
+						if (e.getID() == KeyEvent.KEY_PRESSED) {
+							for (KeyListener listener : getKeyListeners()) {
+								listener.keyPressed(e);
+							}
+						}
+						return false;
+					}
+				});
 
 		try {
 			ImageIcon icon = new ImageIcon(Objects.requireNonNull(getClass().getResource("/application.png")));
@@ -162,12 +198,10 @@ public class MainWindow extends JFrame {
 	}
 
 	public void loadingStart() {
-		System.out.println("Start loading");
 		this.setEnabled(false);
 	}
 
 	public void loadingEnd() {
 		this.setEnabled(true);
-		System.out.println("Finish loading");
 	}
 }
